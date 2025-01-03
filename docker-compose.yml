@@ -1,0 +1,32 @@
+services:
+  myfin-postgres:
+    image: postgres:15
+    container_name: db
+    environment:
+     - POSTGRES_DB=${DB_NAME}
+     - POSTGRES_USER=${DB_USER}
+     - POSTGRES_PASSWORD=${DB_PASSWD}
+    ports:
+    - '5432:5432'
+    volumes:
+    - pg_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    container_name: myfin-server-app
+    ports:
+      - '8000:8000'
+    volumes:
+      - .:/app
+    environment:
+      - DJANGO_ENV=${DJANGO_ENV}
+      - DATABASE_NAME=${DB_NAME}
+      - DATABASE_USER=${DB_USER}
+      - DATABASE_PASSWORD=${DB_PASSWD}
+      - DATABASE_HOST=${DB_HOST}
+      - DATABASE_PORT=${DB_PORT}
+    depends_on:
+      - myfin-postgres
+
+volumes:
+  pg_data:
