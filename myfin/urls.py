@@ -18,50 +18,60 @@ Including another URLconf
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import path
+from django.urls import path, include
 
-from ninja import NinjaAPI
-from ninja.throttling import AnonRateThrottle, AuthRateThrottle
-from ninja_extra import exceptions
-from ninja_jwt.routers.obtain import obtain_pair_router
-from ninja_jwt.routers.verify import verify_router
-
-from accounts.api import register_router
-from finances.api import router as managers_router
-
-api = NinjaAPI(
-    title="Myfin API",
-    version="1",
-    throttle=[
-        AnonRateThrottle("10/s"),
-        AuthRateThrottle("100/s"),
-    ],
-)
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
 
 
-def api_exception_handler(request, exc):
-    headers = {}
+@api_view(["GET"])
+def api_root(request, format=None):
+    return Response(
+        {
+            "budgets-summary-list": reverse(
+                "budgets-summary-list", request=request, format=format
+            ),
+            "budget-create": reverse("budget-create", request=request, format=format),
+            "budget-delete": reverse("budget-delete", request=request, format=format),
+            "bank-aliases-list": reverse(
+                "bank-aliases-list", request=request, format=format
+            ),
+            "bank-alias-create": reverse(
+                "bank-alias-create", request=request, format=format
+            ),
+            "bank-alias-delete": reverse(
+                "bank-alias-delete", request=request, format=format
+            ),
+            "transactions-list": reverse(
+                "transactions-list", request=request, format=format
+            ),
+            "transaction-create": reverse(
+                "transaction-create", request=request, format=format
+            ),
+            "transaction-delete": reverse(
+                "transaction-delete", request=request, format=format
+            ),
+            "transaction-categories-list": reverse(
+                "transaction-categories-list", request=request, format=format
+            ),
+            "transaction-category-create": reverse(
+                "transaction-category-create", request=request, format=format
+            ),
+            "transaction-category-delete": reverse(
+                "transaction-category-delete", request=request, format=format
+            ),
+        }
+    )
 
-    if isinstance(exc.detail, (list, dict)):
-        data = exc.detail
-    else:
-        data = {"detail": exc.detail}
 
-    response = api.create_response(request, data, status=exc.status_code)
-    for k, v in headers.items():
-        response.setdefault(k, v)
-
-    return response
-
-
-api.exception_handler(exceptions.APIException)(api_exception_handler)
-api.add_router("/token", tags=["Auth"], router=obtain_pair_router)
-api.add_router("/token", tags=["Auth"], router=verify_router)
-api.add_router("/user", managers_router)
-api.add_router("/", register_router)
-
-urlpatterns = [path("admin/", admin.site.urls), path("api/", api.urls, name="api")]
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("api-auth/", include("rest_framework.urls")),
+    path("api/", include("finances.urls")),
+    path("api/", api_root),
+]
 
 if settings.DEBUG:
-    # urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

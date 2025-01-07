@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 import os
 from pathlib import Path
-
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -29,17 +28,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG")
+DEBUG = bool(int(os.getenv("DEBUG")))
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["*"]
 
-CORS_ALLOW_ALL_ORIGINS = True
 CORS_URLS_REGEX = r"^/api/.*$"
 CORS_ALLOW_METHODS = (
     "DELETE",
     "GET",
     "POST",
 )
+CORS_ALLOWED_ORIGINS = [
+    "http://172.104.248.136:8000",
+]
 
 # Application definition
 
@@ -51,8 +52,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "corsheaders",
-    "ninja_jwt",
-    "ninja_extra",
+    "rest_framework",
     "accounts",
     "finances",
 ]
@@ -60,7 +60,9 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.cache.UpdateCacheMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "django.middleware.cache.FetchFromCacheMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -106,6 +108,12 @@ DATABASES = {
     }
 }
 
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django.core.cache.backends.memcached.PyMemcacheCache",
+#         "LOCATION": "memcached:11211",
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -171,17 +179,8 @@ LOGGING = {
     },
 }
 
-JWT_AUTH = {
-    # how long the original token is valid for
-    # 'JWT_EXPIRATION_DELTA': datetime.timedelta(days=2),
-    #
-    # # allow refreshing of tokens
-    # 'JWT_ALLOW_REFRESH': True,
-    #
-    # this is the maximum time AFTER the token was issued that
-    # it can be refreshed.  exprired tokens can't be refreshed.
-    # 'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
-    "JWT_VERIFY_EXPIRATION": False,
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
 }
-
-NINJA_PAGINATION_PER_PAGE = 50
