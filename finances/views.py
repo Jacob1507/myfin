@@ -22,6 +22,12 @@ from finances.serializers import (
 )
 
 
+class UserSetupView(APIView):
+    def post(self, *args, **kwargs):
+        fin_logic.setup_existing_user(self.request.user)
+        return Response(status=status.HTTP_200_OK, data=dict(message="User is set up"))
+
+
 class BudgetsSummaryView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 

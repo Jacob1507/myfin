@@ -29,6 +29,7 @@ from rest_framework.reverse import reverse
 def api_root(request, format=None):
     return Response(
         {
+            "user-setup": reverse("user-setup", request=request, format=format),
             "budgets-summary-list": reverse(
                 "budgets-summary-list", request=request, format=format
             ),

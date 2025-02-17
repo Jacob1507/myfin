@@ -4,6 +4,7 @@ from finances import views as fin_views
 
 
 urlpatterns = [
+    path("user-setup/", fin_views.UserSetupView.as_view(), name="user-setup"),
     path(
         "budgets-summary/",
         fin_views.BudgetsSummaryView.as_view(),
@@ -63,4 +64,3 @@ urlpatterns = [
         name="transaction-category-delete",
     ),
 ]
-# urlpatterns = format_suffix_patterns(urlpatterns, allowed=["json"])

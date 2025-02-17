@@ -61,6 +61,16 @@ def setup_new_user(*, username: str, password: str, email: str) -> User:
 
 
 @transaction.atomic
+def setup_existing_user(user: User):
+    root_title = f"{user.username}-root-counter"
+    Budget.objects.get_or_create(
+        user=user, parent=None, title=root_title, slug=slugify(root_title)
+    )
+    setup_default_categories(user)
+    return user
+
+
+@transaction.atomic
 def add_new_budget(
     *,
     user: User,
